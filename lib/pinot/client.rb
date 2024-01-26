@@ -1,11 +1,12 @@
 module Pinot
   class Client
-    attr_reader :host, :port, :admin_port, :protocol
+    attr_reader :host, :port, :controller_host, :controller_port, :protocol
 
-    def initialize(host:, port:, admin_port:, protocol: :http)
+    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http)
       @host = host
       @port = port
-      @admin_port = admin_port
+      @controller_port = controller_port
+      @controller_host = controller_host || host
       @protocol = protocol
     end
 
@@ -14,33 +15,33 @@ module Pinot
     end
 
     def schema(name)
-      url = "#{admin_uri}/schemas/#{name}"
+      url = "#{controller_uri}/schemas/#{name}"
       response = http.get(url)
       JSON.parse(response)
     end
 
     def delete_segments(name, type: :offline)
       type = type.to_s.upcase
-      url = "#{admin_uri}/segments/#{name}?type=#{type}"
+      url = "#{controller_uri}/segments/#{name}?type=#{type}"
       response = http.delete(url)
       JSON.parse(response)
     end
 
     def create_table(schema)
-      url = "#{admin_uri}/tables"
+      url = "#{controller_uri}/tables"
       response = http.post(url, body: schema)
       JSON.parse(response)
     end
 
     def delete_table(name, type: :offline)
       type = type.to_s.downcase
-      url = "#{admin_uri}/tables/#{name}?type=#{type}"
+      url = "#{controller_uri}/tables/#{name}?type=#{type}"
       response = http.delete(url)
       JSON.parse(response)
     end
 
     def ingest_json(file, table:)
-      url = "#{admin_uri}/ingestFromFile?tableNameWithType=#{table}&batchConfigMapStr=%7B%22inputFormat%22%3A%22json%22%7D"
+      url = "#{controller_uri}/ingestFromFile?tableNameWithType=#{table}&batchConfigMapStr=%7B%22inputFormat%22%3A%22json%22%7D"
       content_type = "multipart/form-data"
       response = HTTPX.post(
         url,
@@ -56,7 +57,7 @@ module Pinot
     end
 
     def create_schema(schema, override: true, force: false)
-      url = "#{admin_uri}/schemas?override=#{override}&force=#{force}"
+      url = "#{controller_uri}/schemas?override=#{override}&force=#{force}"
       response = http.post(url, body: schema)
       JSON.parse(response)
     end
@@ -69,8 +70,8 @@ module Pinot
       "#{protocol}://#{host}:#{port}"
     end
 
-    def admin_uri
-      "#{protocol}://#{host}:#{admin_port}"
+    def controller_uri
+      "#{protocol}://#{controller_host}:#{controller_port}"
     end
 
     def query_sql_uri
