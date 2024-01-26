@@ -15,8 +15,7 @@ module Pinot
       types = @payload.dig("resultTable", "dataSchema", "columnDataTypes")
       return {} if @payload["exceptions"].any?
       ix = 0
-      # TODO: handle when there's no segment
-      puts @payload.inspect if names.nil?
+      names ||= []
       names.map do |name|
         ret = [name, types[ix]]
         ix += 1
