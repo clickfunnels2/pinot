@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pinot (0.1.0)
+    pinot (0.1.1)
       httpx
 
 GEM
