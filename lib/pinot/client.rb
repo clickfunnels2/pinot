@@ -1,14 +1,14 @@
 module Pinot
   class Client
-    attr_reader :host, :port, :controller_host, :controller_port, :protocol, :socks5_url, :bearer_token
+    attr_reader :host, :port, :controller_host, :controller_port, :protocol, :socks5_uri, :bearer_token
 
-    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http, socks5_url: nil, bearer_token: nil)
+    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http, socks5_uri: nil, bearer_token: nil)
       @host = host
       @port = port
       @controller_port = controller_port
       @controller_host = controller_host || host
       @protocol = protocol
-      @socks5_url = socks5_url
+      @socks5_uri = socks5_uri
       @bearer_token = bearer_token
     end
 
@@ -71,8 +71,8 @@ module Pinot
       default_headers = {"Content-Type" => content_type}
       default_headers["Authorization"] = "Bearer #{bearer_token}" if bearer_token
       @http = HTTPX.with(headers: default_headers, timeout: { connect_timeout: 5 })
-      if socks5_url
-        @http = @http.plugin(:proxy).with_proxy(uri: "socks5://#{socks5_url}") if socks5_url
+      if socks5_uri
+        @http = @http.plugin(:proxy).with_proxy(uri: socks5_uri) if socks5_uri
       end
       @http
     end
