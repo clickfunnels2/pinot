@@ -1,17 +1,21 @@
 module Pinot
   class Client
-    attr_reader :host, :port, :controller_host, :controller_port, :protocol
+    attr_reader :host, :port, :controller_host, :controller_port, :protocol, :socks5_url, :bearer_token
 
-    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http)
+    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http, socks5_url: nil, bearer_token: nil)
       @host = host
       @port = port
       @controller_port = controller_port
       @controller_host = controller_host || host
       @protocol = protocol
+      @socks5_url = socks5_url
+      @bearer_token = bearer_token
     end
 
     def execute(sql)
-      Response.new(JSON.parse(http.post(query_sql_uri, json: {sql: sql})))
+      response = http.post(query_sql_uri, json: {sql: sql})
+      return response if response.is_a?(HTTPX::ErrorResponse)
+      Response.new(JSON.parse(response))
     end
 
     def schema(name)
@@ -63,7 +67,14 @@ module Pinot
     end
 
     def http(content_type: "application/json")
-      HTTPX.with(headers: {"Content-Type" => content_type})
+      return @http if !@http.nil?
+      default_headers = {"Content-Type" => content_type}
+      default_headers["Authorization"] = "Bearer #{bearer_token}" if bearer_token
+      @http = HTTPX.with(headers: default_headers, timeout: { connect_timeout: 5 })
+      if socks5_url
+        @http = @http.plugin(:proxy).with_proxy(uri: "socks5://#{socks5_url}") if socks5_url
+      end
+      @http
     end
 
     def uri
