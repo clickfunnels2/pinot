@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.1.3] - 2024-07-02
+
 - feature: add tables command
 
 ## [0.1.2] - 2024-05-29
