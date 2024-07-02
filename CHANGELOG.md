@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- feature: add tables command
+
 ## [0.1.2] - 2024-05-29
 
 - feature: support socks5

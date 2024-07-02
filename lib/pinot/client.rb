@@ -66,11 +66,17 @@ module Pinot
       JSON.parse(response)
     end
 
+    def tables
+      url = "#{controller_uri}/tables"
+      response = http.get(url)
+      JSON.parse(response)
+    end
+
     def http(content_type: "application/json")
       return @http if !@http.nil?
       default_headers = {"Content-Type" => content_type}
       default_headers["Authorization"] = "Bearer #{bearer_token}" if bearer_token
-      @http = HTTPX.with(headers: default_headers, timeout: { connect_timeout: 5 })
+      @http = HTTPX.with(headers: default_headers, timeout: {connect_timeout: 5})
       if socks5_uri
         @http = @http.plugin(:proxy).with_proxy(uri: socks5_uri) if socks5_uri
       end
