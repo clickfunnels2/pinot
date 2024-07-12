@@ -51,6 +51,16 @@ resp.columns
 
 It's not on the public API, but the instance variable `@payload` contains all information returned from the Pinot cluster in case can help with troubleshooting
 
+### Query Options
+
+In case there's the need to pass any Pinot [query options](https://docs.pinot.apache.org/users/user-guide-query/query-options), it's can be done when initializing the client.
+
+```ruby
+client = Pinot::Client.new(query_options: {use_multistage_engine: true}, **options)
+```
+
+Any of the query options on the documentation is supported, remember to use its name with underscore formatting.
+
 ### Authentication
 
 In case your pinot cluster is using authentication bearer token, you can specify it on the client constructor
