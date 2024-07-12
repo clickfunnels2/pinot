@@ -1,8 +1,10 @@
+require_relative "client/query_options"
+
 module Pinot
   class Client
-    attr_reader :host, :port, :controller_host, :controller_port, :protocol, :socks5_uri, :bearer_token
+    attr_reader :host, :port, :controller_host, :controller_port, :protocol, :socks5_uri, :bearer_token, :query_options
 
-    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http, socks5_uri: nil, bearer_token: nil)
+    def initialize(host:, port:, controller_port:, controller_host: nil, protocol: :http, socks5_uri: nil, bearer_token: nil, query_options: {})
       @host = host
       @port = port
       @controller_port = controller_port
@@ -10,10 +12,16 @@ module Pinot
       @protocol = protocol
       @socks5_uri = socks5_uri
       @bearer_token = bearer_token
+      @query_options = QueryOptions.new(query_options)
     end
 
     def execute(sql)
-      response = http.post(query_sql_uri, json: {sql: sql})
+      query_params = {sql: sql}
+      if (value = query_options.to_query_options)
+        query_params["queryOptions"] = value
+      end
+
+      response = http.post(query_sql_uri, json: query_params)
       return response if response.is_a?(HTTPX::ErrorResponse)
       Response.new(JSON.parse(response))
     end
